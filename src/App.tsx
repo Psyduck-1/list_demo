@@ -38,7 +38,10 @@ function App() {
                 className={`content-item ${selectedIndex === index ? 'selected' : ''}`}
                 onClick={() => handleItemClick(index)}
               >
-                {content}
+                <div className="item-icon">
+                  <img src="/src/icon/lamp.png" alt="Icon" width="25" height="25" />
+                </div>
+                <div className="item-content">{content}</div>
               </div>
             ))}
           </div>
