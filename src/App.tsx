@@ -1,10 +1,13 @@
 import { useState } from 'react'
+import { getHealth } from './services/api'
+import { isAxiosError } from 'axios'
 import './App.css'
 
 function App() {
   const [inputText, setInputText] = useState('')
   const [contentList, setContentList] = useState<string[]>([])
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   // 处理输入变化
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -12,10 +15,31 @@ function App() {
   }
 
   // 处理提交
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (inputText.trim() !== '') {
-      setContentList([...contentList, inputText])
-      setInputText('') // 清空输入框
+      setIsSubmitting(true)
+      
+      try {
+        // 使用我们的API服务而不是直接使用axios
+        const response = await getHealth();
+        
+        // 处理成功情况
+        setContentList([...contentList, inputText])
+        setInputText('') // 清空输入框
+        console.log('数据已成功发送到API', response.data)
+        
+      } catch (error) {
+        // 处理所有错误情况（网络错误、服务器错误等）
+        if (isAxiosError(error)) {
+          console.error('API请求失败:', error.response?.status || '网络错误')
+          alert(error.response ? `提交失败: ${error.response.status}` : '网络错误，请检查连接')
+        } else {
+          console.error('发生未知错误:', error)
+          alert('发生未知错误，请稍后再试')
+        }
+      } finally {
+        setIsSubmitting(false)
+      }
     }
   }
 
@@ -71,8 +95,9 @@ function App() {
           <button 
             className="submit-button" 
             onClick={handleSubmit}
+            disabled={isSubmitting}
           >
-            提交
+            {isSubmitting ? '提交中...' : '提交'}
           </button>
         </div>
       </div>
